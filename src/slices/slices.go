@@ -232,19 +232,22 @@ func Delete[S ~[]E, E any](s S, i, j int) S {
 // returning the modified slice.
 // DeleteFunc zeroes the elements between the new length and the original length.
 func DeleteFunc[S ~[]E, E any](s S, del func(E) bool) S {
-	i := IndexFunc(s, del)
-	if i == -1 {
-		return s
-	}
-	// Don't start copying elements until we find one to delete.
-	for j := i + 1; j < len(s); j++ {
-		if v := s[j]; !del(v) {
-			s[i] = v
-			i++
+	for j := range s {
+		if del(s[j]) {
+			i := j
+			s2 := s[j+1:]
+			for k := range s2 {
+				if !del(s2[k]) {
+					s[i] = s2[k]
+					i++
+				}
+			}
+			clear(s[i:]) // Found IsSliceInBounds
+			return s[:i]
 		}
 	}
-	clear(s[i:]) // zero/nil out the obsolete elements, for GC
-	return s[:i]
+	
+	return s;
 }
 
 // Replace replaces the elements s[i:j] by the given v, and returns the
