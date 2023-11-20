@@ -252,11 +252,12 @@ func DeleteFunc[S ~[]E, E any](s S, del func(E) bool) S {
 // Replace panics if j > len(s) or s[i:j] is not a valid slice of s.
 // When len(v) < (j-i), Replace zeroes the elements between the new length and the original length.
 func Replace[S ~[]E, E any](s S, i, j int, v ...E) S {
-	_ = s[i:j] // bounds check
-
 	if i == j {
 		return Insert(s, i, v...)
 	}
+
+	_ = s[i:j:len(s)] // bounds check
+
 	if j == len(s) {
 		return append(s[:i], v...)
 	}
